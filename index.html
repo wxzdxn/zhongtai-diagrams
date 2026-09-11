@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>剧本协作中台 · 图示集</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:48px 24px; background:var(--bg); color:var(--text);
+         font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.6; }
+  .wrap { max-width:880px; margin:0 auto; }
+  h1 { font-size:28px; margin:0 0 8px; }
+  .sub { color:var(--muted); margin-bottom:36px; }
+  .grid { display:grid; gap:16px; }
+  a.card { display:block; padding:22px 24px; background:var(--card); border-radius:12px;
+           text-decoration:none; color:var(--text); border:1px solid #334155; transition:.2s; }
+  a.card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .t { font-size:18px; font-weight:600; margin-bottom:6px; }
+  .d { font-size:14px; color:var(--muted); }
+  .foot { margin-top:40px; padding-top:20px; border-top:1px solid #334155; font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>剧本协作中台 · 图示集</h1>
+  <div class="sub">平台架构 · 业务流程 · 协作时序 · 数据流转</div>
+  <div class="grid">
+    <a class="card" href="1-平台架构图.html" target="_blank" rel="noopener">
+      <div class="t">① 平台架构图</div>
+      <div class="d">角色 · 功能模块 · 数据三层视图,含权限边界</div>
+    </a>
+    <a class="card" href="2-剧本生命周期图.html" target="_blank" rel="noopener">
+      <div class="t">② 剧本全生命周期图</div>
+      <div class="d">从上传到上架的状态流转,含返工与时效管控</div>
+    </a>
+    <a class="card" href="3-审核批注时序图.html" target="_blank" rel="noopener">
+      <div class="t">③ 审核批注时序图</div>
+      <div class="d">承制、监制、编剧之间的审核交互顺序</div>
+    </a>
+    <a class="card" href="4-投放数据流图.html" target="_blank" rel="noopener">
+      <div class="t">④ 投放数据流图</div>
+      <div class="d">投放数据从采集到决策回流的完整路径</div>
+    </a>
+  </div>
+  <div class="foot">点击任意图进入交互式查看 · 支持明暗主题切换与图片导出</div>
+</div>
+</body>
+</html>
