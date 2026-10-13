@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "剧本中台 · 数据迁移与母本绑定数据流",
+    "subtitle": "12 张钉钉表 → 3 级匹配 → 双层库 · 未命中进挂起清单，绝不静默丢弃",
+    "locale": "zh-CN",
+    "output": "4-数据迁移数据流图.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "default": {
+          "label": "常规流转"
+        },
+        "emphasis": {
+          "label": "主数据路径"
+        },
+        "security": {
+          "label": "挂起 / 人工确认"
+        },
+        "dashed": {
+          "label": "旁路 / 待补录"
+        }
+      }
+    },
+    "viewBox": [
+      1200,
+      600
+    ]
+  },
+  "stages": [
+    {
+      "label": "来源"
+    },
+    {
+      "label": "归一化"
+    },
+    {
+      "label": "匹配分流"
+    },
+    {
+      "label": "落库"
+    },
+    {
+      "label": "人工确认"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dt_main",
+      "type": "external",
+      "label": "主线台账",
+      "sublabel": "760 条",
+      "stage": 0,
+      "row": 0,
+      "tag": "首行写着「小心误删」"
+    },
+    {
+      "id": "dt_down",
+      "type": "external",
+      "label": "下游 11 张表",
+      "sublabel": "2,600+ 条记录",
+      "stage": 0,
+      "row": 1,
+      "tag": "6 字段重复维护"
+    },
+    {
+      "id": "dt_unread",
+      "type": "external",
+      "label": "3 张无权限表",
+      "sublabel": "记录缺失表清单",
+      "stage": 0,
+      "row": 2,
+      "tag": "E-26 不得跳过"
+    },
+    {
+      "id": "normalize",
+      "type": "backend",
+      "label": "归一化",
+      "sublabel": "去空格 · 繁简 · 大小写",
+      "stage": 1,
+      "row": 0,
+      "tag": "E-08"
+    },
+    {
+      "id": "fingerprint",
+      "type": "backend",
+      "label": "文件指纹",
+      "sublabel": "同一文件识别",
+      "stage": 1,
+      "row": 1,
+      "tag": "查重输入"
+    },
+    {
+      "id": "enumguard",
+      "type": "security",
+      "label": "枚举闸门",
+      "sublabel": "形态与改编字段",
+      "stage": 1,
+      "row": 2,
+      "tag": "E-30 未定稿拒迁"
+    },
+    {
+      "id": "l1",
+      "type": "backend",
+      "label": "L1 上线 ID 精确",
+      "sublabel": "唯一性最高",
+      "stage": 2,
+      "row": 0,
+      "tag": "填充率 47%"
+    },
+    {
+      "id": "l2",
+      "type": "backend",
+      "label": "L2 ID / code 精确",
+      "sublabel": "5 套 ID 并行",
+      "stage": 2,
+      "row": 1
+    },
+    {
+      "id": "l3",
+      "type": "backend",
+      "label": "L3 归一化剧名",
+      "sublabel": "最后一道匹配",
+      "stage": 2,
+      "row": 2,
+      "tag": "3 级粗匹配"
+    },
+    {
+      "id": "script_lib",
+      "type": "database",
+      "label": "剧本库 Script",
+      "sublabel": "合并为唯一项目主记录",
+      "stage": 3,
+      "row": 0,
+      "tag": "分配 script_id"
+    },
+    {
+      "id": "topic_lib",
+      "type": "database",
+      "label": "选题库 Topic",
+      "sublabel": "母本结构化落库",
+      "stage": 3,
+      "row": 1,
+      "tag": "topic_id"
+    },
+    {
+      "id": "audit",
+      "type": "database",
+      "label": "审计日志",
+      "sublabel": "逐条写入",
+      "stage": 3,
+      "row": 2,
+      "tag": "可回滚依据"
+    },
+    {
+      "id": "hanglist",
+      "type": "security",
+      "label": "挂起清单",
+      "sublabel": "未命中记录",
+      "stage": 4,
+      "row": 0,
+      "tag": "P6 绝不静默丢弃"
+    },
+    {
+      "id": "refpool",
+      "type": "security",
+      "label": "ref_text 待补录池",
+      "sublabel": "444 条外部母本",
+      "stage": 4,
+      "row": 1,
+      "tag": "P7 不错绑"
+    },
+    {
+      "id": "review",
+      "type": "backend",
+      "label": "抽样核验与回滚",
+      "sublabel": "四道闸门",
+      "stage": 4,
+      "row": 2,
+      "tag": "≥10% · ≥98% · ≤5%"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f_main",
+      "from": "dt_main",
+      "to": "normalize",
+      "label": "原始记录",
+      "classification": "12 张表汇入",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f_down",
+      "from": "dt_down",
+      "to": "fingerprint",
+      "label": "下游记录",
+      "classification": "含 88 条孤儿改编",
+      "variant": "default"
+    },
+    {
+      "id": "f_unread",
+      "from": "dt_unread",
+      "to": "enumguard",
+      "label": "缺失表清单",
+      "classification": "权限待申请",
+      "variant": "security"
+    },
+    {
+      "id": "f_norm_l1",
+      "from": "normalize",
+      "to": "l1",
+      "label": "归一化剧名",
+      "classification": "非破坏性改写",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f_fp_l2",
+      "from": "fingerprint",
+      "to": "l2",
+      "label": "指纹命中",
+      "classification": "同文件归并",
+      "variant": "default"
+    },
+    {
+      "id": "f_enum_l3",
+      "from": "enumguard",
+      "to": "l3",
+      "label": "枚举校验后放行",
+      "classification": "未定稿则拒迁",
+      "variant": "security"
+    },
+    {
+      "id": "f_l1_script",
+      "from": "l1",
+      "to": "script_lib",
+      "label": "命中并入主记录",
+      "classification": "合并为一条",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f_l2_topic",
+      "from": "l2",
+      "to": "topic_lib",
+      "label": "母本绑定",
+      "classification": "批量绑 topic_id",
+      "variant": "default"
+    },
+    {
+      "id": "f_l3_audit",
+      "from": "l3",
+      "to": "audit",
+      "label": "逐条写入审计",
+      "classification": "可回滚",
+      "variant": "dashed"
+    },
+    {
+      "id": "f_script_hang",
+      "from": "script_lib",
+      "to": "hanglist",
+      "label": "未命中残留",
+      "classification": "进入挂起清单",
+      "variant": "security"
+    },
+    {
+      "id": "f_topic_ref",
+      "from": "topic_lib",
+      "to": "refpool",
+      "label": "无候选母本",
+      "classification": "保留原文待补录",
+      "variant": "dashed"
+    },
+    {
+      "id": "f_audit_review",
+      "from": "audit",
+      "to": "review",
+      "label": "抽样比对",
+      "classification": "业务核验",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "3 级粗匹配的顺序不可颠倒",
+      "items": [
+        "L1 上线 ID 精确命中优先——唯一性最高但填充率只有 47%",
+        "L2 script_id 与 code 精确匹配，处理 5 套 ID 并行的历史包袱",
+        "L3 归一化剧名精确匹配兜底，规划书原为 6 级已降为 3 级粗匹配"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "未命中绝不静默丢弃（P6）",
+      "items": [
+        "任何未命中记录进入挂起清单，由人工在批量绑定界面逐条确认",
+        "无候选母本时保留 ref_text 原文进待补录池，宁可待补录也不为凑关系而错绑（P7）",
+        "444 条外部母本虽无责任人，也不得因无人补录而丢弃"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "枚举未定稿就拒绝迁移",
+      "items": [
+        "内容形态与改编方式不早于 10/16 定稿，则 R5 迁移无法启动",
+        "强行迁移会产生二次清洗成本，E-30 要求直接拒绝执行",
+        "3 张无读取权限的表须先申请权限，不得跳过该表数据"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "迁移是全项目唯一不可逆动作",
+      "items": [
+        "三条验收线：抽样 ≥10%、字段级准确率 ≥98%、挂起率 ≤5%，任一不达线不放行",
+        "四道闸门：影子期 → 核验 → 灰度 → 全量，每道有明确放行标准",
+        "钉钉表格在业务书面确认前保持事实源，中台数据可回滚"
+      ]
+    }
+  ]
+}

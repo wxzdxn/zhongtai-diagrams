@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "剧本中台 · 平台架构总览",
+    "subtitle": "12 张钉钉表格收敛为「选题库 + 剧本库」双层中台 · v1.0",
+    "locale": "zh-CN",
+    "output": "1-平台架构图.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": { "label": "用户入口" },
+        "backend": { "label": "业务服务" },
+        "database": { "label": "数据底座" },
+        "security": { "label": "权限与审计" },
+        "external": { "label": "外部 / 待接入" },
+        "cloud": { "label": "合规与导出" }
+      }
+    }
+  },
+  "components": [
+    { "id": "users", "type": "external", "label": "业务角色", "sublabel": "主编 总编 制片 编剧 翻译 评级人", "pos": [40, 420], "size": [186, 92], "tag": "7 类角色" },
+
+    { "id": "list", "type": "frontend", "label": "剧本列表", "sublabel": "可筛选 / 可检索", "pos": [286, 150], "size": [186, 84], "tag": "P95 ≤3 秒" },
+    { "id": "detail", "type": "frontend", "label": "剧本详情", "sublabel": "全字段 + 时间线 + 复盘", "pos": [286, 274], "size": [186, 84], "tag": "状态时间线" },
+    { "id": "dashboard", "type": "frontend", "label": "全局看板", "sublabel": "按形态 / 题材 / 评级聚合", "pos": [286, 398], "size": [186, 84], "tag": "周会 ≤10 分钟" },
+    { "id": "todo", "type": "frontend", "label": "我的待办", "sublabel": "翻译交付 / 待补录 / 挂起", "pos": [286, 522], "size": [186, 84] },
+    { "id": "admin", "type": "frontend", "label": "管理后台", "sublabel": "人员 / 权限 / 迁移", "pos": [286, 646], "size": [186, 84], "tag": "管理员独有" },
+
+    { "id": "idgen", "type": "backend", "label": "唯一 ID 服务", "sublabel": "script_id / topic_id", "pos": [532, 150], "size": [186, 84], "tag": "P1 第一性需求" },
+    { "id": "dedupe", "type": "backend", "label": "查重引擎", "sublabel": "文件指纹 + 归一化剧名", "pos": [532, 274], "size": [186, 84], "tag": "推荐器非守门员" },
+    { "id": "validate", "type": "backend", "label": "录入校验", "sublabel": "8 条数据质量规则", "pos": [532, 398], "size": [186, 84], "tag": "P4 关口前移" },
+    { "id": "stateflow", "type": "backend", "label": "状态流转", "sublabel": "≤11 种受控枚举", "pos": [532, 522], "size": [186, 84], "tag": "P3 禁语义外挂" },
+    { "id": "search", "type": "backend", "label": "检索服务", "sublabel": "数据库全文索引", "pos": [532, 646], "size": [186, 84], "tag": "不引入 ES" },
+
+    { "id": "topic", "type": "database", "label": "选题库 Topic", "sublabel": "母本 · topic_id", "pos": [778, 150], "size": [186, 84], "tag": "1 : N" },
+    { "id": "script", "type": "database", "label": "剧本库 Script", "sublabel": "项目 · script_id", "pos": [778, 274], "size": [186, 84], "tag": "一剧一条" },
+    { "id": "log", "type": "database", "label": "审计日志 Log", "sublabel": "流转 + 审计同底座", "pos": [778, 398], "size": [186, 84], "tag": "≥180 天不可删" },
+    { "id": "trace", "type": "database", "label": "埋点事件", "sublabel": "10 个事件 · 同库实例", "pos": [778, 522], "size": [186, 84], "tag": "不引独立平台" },
+    { "id": "export", "type": "cloud", "label": "全量导出", "sublabel": "CSV / JSON 通用格式", "pos": [778, 646], "size": [186, 84], "tag": "防平台锁定" },
+
+    { "id": "rbac", "type": "security", "label": "RBAC 权限", "sublabel": "管理员 / 编辑 / 只读", "pos": [1024, 150], "size": [186, 84], "tag": "最小可见原则" },
+    { "id": "cost", "type": "security", "label": "成本字段隔离", "sublabel": "列表 / 详情 / 导出 / 接口", "pos": [1024, 274], "size": [186, 84], "tag": "四处均不可见" },
+    { "id": "dingtalk", "type": "external", "label": "钉钉 12 张表", "sublabel": "760 条主线 + 2,600 下游", "pos": [1024, 398], "size": [186, 84], "tag": "切换前事实源" },
+    { "id": "semantic", "type": "external", "label": "语义 / 向量查重", "sublabel": "W-07 本期不做", "pos": [1024, 522], "size": [186, 84], "tag": "v1.0 范围红线" },
+    { "id": "mobile", "type": "external", "label": "移动端", "sublabel": "W-10 本期不做", "pos": [1024, 646], "size": [186, 84], "tag": "仅桌面网页版" }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "剧本中台 v1.0 · 桌面网页版", "wraps": ["list", "detail", "dashboard", "todo", "admin", "idgen", "dedupe", "validate", "stateflow", "search", "topic", "script", "log", "trace", "export"] },
+    { "kind": "security-group", "label": "字段级权限边界", "wraps": ["rbac", "cost"] }
+  ],
+  "connections": [
+    { "id": "c_users_list", "from": "users", "to": "list", "label": "找剧本", "variant": "emphasis" },
+    { "id": "c_users_dash", "from": "users", "to": "dashboard", "variant": "default" },
+
+    { "id": "c_detail_sf", "from": "detail", "to": "stateflow", "label": "变更状态", "variant": "emphasis" },
+    { "id": "c_list_dedupe", "from": "list", "to": "dedupe", "label": "上传查重", "variant": "emphasis" },
+
+    { "id": "c_dedupe_idgen", "from": "dedupe", "to": "idgen", "label": "未命中 / 确认新建" },
+    { "id": "c_validate_script", "from": "validate", "to": "script", "label": "校验通过写入", "variant": "emphasis" },
+    { "id": "c_stateflow_log", "from": "stateflow", "to": "log", "label": "操作人 + 时间 + 前后值", "variant": "emphasis" },
+    { "id": "c_script_topic", "from": "script", "to": "topic", "label": "topic_id / ref_text 二选一", "variant": "emphasis" },
+    { "id": "c_script_export", "from": "script", "to": "export", "variant": "dashed" },
+
+    { "id": "c_rbac_cost", "from": "rbac", "to": "cost", "label": "字段级裁决", "variant": "security" },
+    { "id": "c_rbac_list", "from": "rbac", "to": "list", "label": "最小可见", "variant": "security" },
+    { "id": "c_dingtalk_script", "from": "dingtalk", "to": "script", "label": "3 级匹配迁移", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "双层结构：母本与项目分离",
+      "items": [
+        "选题库存母本（topic_id），剧本库存项目（script_id），一个母本 1 : N 反复开发成多个项目",
+        "母本未结构化入库时保留 ref_text 原文顶上——两条通道至少填一条，宁可待补录也不为凑关系而错绑",
+        "旧台账 5 套 ID 并行、跨表靠 VLOOKUP 与人肉记颜色；新结构以单一 script_id 打通一切"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "五类页面覆盖主用户旅程",
+      "items": [
+        "剧本列表 → 剧本详情 → 全局看板 → 我的待办 → 管理后台",
+        "列表承载检索与筛选，详情承载全字段、状态时间线与复盘",
+        "看板把「周会数据准备约半天」压到 ≤10 分钟"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "权限与留痕是硬约束",
+      "items": [
+        "成本字段在列表、详情、导出、接口四处对未授权角色均不返回",
+        "审计日志不可编辑、不可删除，保留期 ≥180 天",
+        "权限变更本身也写入审计日志"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "本期的三条范围红线",
+      "items": [
+        "语义 / 向量查重（W-07）——v1.0 只做文件指纹 + 归一化主名 + 相似度候选",
+        "移动端（W-10）——只做桌面网页版",
+        "替换钉钉、提报采买策划创作四环节、财务结算、外部承制方门户均不在本期"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "防平台锁定的硬约束",
+      "items": [
+        "全量业务数据（选题库、剧本库、子母关系、审计日志）必须可导出为通用格式",
+        "数据模型与底层存储解耦，不绑定特定 BaaS",
+        "钉钉表格在业务验证通过前保持事实源，中台数据可回滚"
+      ]
+    }
+  ]
+}

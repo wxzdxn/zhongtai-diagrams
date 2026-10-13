@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "剧本中台 · 上传查重与建 ID 时序",
+    "subtitle": "流程 A：新建 / 上传 → 查重 → 校验 → 建 ID · 查重永不阻断",
+    "locale": "zh-CN",
+    "output": "3-查重建号时序图.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "viewBox": [
+      1080,
+      920
+    ],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "default": {
+          "label": "常规调用"
+        },
+        "emphasis": {
+          "label": "主路径"
+        },
+        "security": {
+          "label": "校验关口"
+        },
+        "dashed": {
+          "label": "旁路 / 留痕"
+        },
+        "return": {
+          "label": "返回"
+        }
+      }
+    }
+  },
+  "participants": [
+    {
+      "id": "editor",
+      "type": "external",
+      "label": "主编 / 责编",
+      "sublabel": "上传剧本"
+    },
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "创建页",
+      "sublabel": "两入口并列"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "中台服务",
+      "sublabel": "校验与编排"
+    },
+    {
+      "id": "dup",
+      "type": "backend",
+      "label": "查重引擎",
+      "sublabel": "指纹 + 归一化"
+    },
+    {
+      "id": "idgen",
+      "type": "backend",
+      "label": "ID 服务",
+      "sublabel": "script_id"
+    },
+    {
+      "id": "topic",
+      "type": "database",
+      "label": "选题库",
+      "sublabel": "topic_id 候选"
+    },
+    {
+      "id": "script",
+      "type": "database",
+      "label": "剧本库",
+      "sublabel": "项目主记录"
+    },
+    {
+      "id": "log",
+      "type": "database",
+      "label": "审计日志",
+      "sublabel": "留痕"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "① 上传与查重"
+    },
+    {
+      "from": 320,
+      "to": 470,
+      "label": "② 用户选择（两按钮并列）"
+    },
+    {
+      "from": 490,
+      "to": 650,
+      "label": "③ 校验与建 ID"
+    },
+    {
+      "from": 670,
+      "to": 790,
+      "label": "④ 留痕与返回"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "editor",
+      "to": "ui",
+      "y": 168,
+      "label": "上传原创剧本 / 从选题库创建",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "ui",
+      "to": "api",
+      "y": 196,
+      "label": "提交创建请求",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "dup",
+      "y": 224,
+      "label": "计算文件指纹 + 归一化剧名",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m4",
+      "from": "dup",
+      "to": "topic",
+      "y": 252,
+      "label": "检索母本候选",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "topic",
+      "to": "dup",
+      "y": 284,
+      "label": "候选清单 + 相似度",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "dup",
+      "to": "api",
+      "y": 336,
+      "label": "5 秒内返回查重结果",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "ui",
+      "y": 376,
+      "label": "展示候选 + 两个并列按钮",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "ui",
+      "to": "editor",
+      "y": 412,
+      "label": "请用户裁决",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "editor",
+      "to": "ui",
+      "y": 452,
+      "label": "选择：绑定 / 继续上传 / 不是重复",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "ui",
+      "to": "api",
+      "y": 510,
+      "label": "提交选择",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "editor",
+      "y": 546,
+      "label": "R32 录入校验：枚举 / 日期 / 评级格式",
+      "variant": "security",
+      "note": "校验通过才建 ID；不通过则拒绝保存并提示"
+    },
+    {
+      "id": "m12",
+      "from": "api",
+      "to": "idgen",
+      "y": 586,
+      "label": "申请 script_id",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m13",
+      "from": "idgen",
+      "to": "api",
+      "y": 622,
+      "label": "script_id（全局唯一）",
+      "variant": "return"
+    },
+    {
+      "id": "m14",
+      "from": "api",
+      "to": "script",
+      "y": 686,
+      "label": "写入项目主记录",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m15",
+      "from": "api",
+      "to": "topic",
+      "y": 716,
+      "label": "一键绑定 topic_id 或保留 ref_text",
+      "variant": "dashed"
+    },
+    {
+      "id": "m16",
+      "from": "api",
+      "to": "log",
+      "y": 746,
+      "label": "写审计日志",
+      "variant": "dashed"
+    },
+    {
+      "id": "m17",
+      "from": "api",
+      "to": "ui",
+      "y": 776,
+      "label": "创建成功并跳转剧本详情",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "ui",
+      "from": 190,
+      "to": 780,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 196,
+      "to": 780,
+      "type": "backend"
+    },
+    {
+      "participant": "dup",
+      "from": 218,
+      "to": 342,
+      "type": "backend"
+    },
+    {
+      "participant": "topic",
+      "from": 246,
+      "to": 290,
+      "type": "database"
+    },
+    {
+      "participant": "idgen",
+      "from": 580,
+      "to": 628,
+      "type": "backend"
+    },
+    {
+      "participant": "script",
+      "from": 680,
+      "to": 692,
+      "type": "database"
+    },
+    {
+      "participant": "topic",
+      "from": 710,
+      "to": 722,
+      "type": "database"
+    },
+    {
+      "participant": "log",
+      "from": 740,
+      "to": 752,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "查重永不阻断（P7）",
+      "items": [
+        "无论是否命中候选，用户均可继续上传——查重是推荐器，不是守门员",
+        "命中时「一键绑定」与「继续上传（不是重复）」两个按钮并列展示",
+        "把绑定设为默认唯一路径是明确禁止的交互设计"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "5 秒响应预算",
+      "items": [
+        "文件指纹 + 归一化剧名是查重的全部输入，v1.0 不做语义向量检索",
+        "归一化涵盖去空格、繁简转换、大小写统一三项",
+        "组合筛选响应超 3 秒展示加载态，超 10 秒必须返回明确错误而非空白"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "防滥用的标记",
+      "items": [
+        "用户选「不是重复」时必须落一条标记，供后续人工复核",
+        "重复上传同一文件提示已存在并展示候选，但不得阻断上传",
+        "同一部剧被重复录入时展示候选并引导至既有记录，同样不阻断创建"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "建 ID 是唯一性关口（P1）",
+      "items": [
+        "校验通过才生成 script_id；不通过则拒绝保存并提示具体原因",
+        "script_id 一经生成不可变更、不可复用",
+        "唯一 ID 覆盖率是 0% → 100% 的硬指标"
+      ]
+    }
+  ]
+}

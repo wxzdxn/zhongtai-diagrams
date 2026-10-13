@@ -1,0 +1,444 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "剧本中台 · 剧本全生命周期工作流",
+    "subtitle": "剧本上传 → 翻译 → 制作 → 上线 → 复盘 → 评级 · 四泳道六阶段",
+    "locale": "zh-CN",
+    "output": "2-剧本生命周期图.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": {
+          "label": "业务操作"
+        },
+        "backend": {
+          "label": "系统服务"
+        },
+        "database": {
+          "label": "数据沉淀"
+        },
+        "security": {
+          "label": "例外出口"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "biz",
+      "label": "业务操作"
+    },
+    {
+      "id": "sys",
+      "label": "系统服务"
+    },
+    {
+      "id": "data",
+      "label": "数据沉淀"
+    },
+    {
+      "id": "gov",
+      "label": "例外出口",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "ph_create",
+      "label": "创建",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "ph_translate",
+      "label": "翻译",
+      "fromCol": 2,
+      "toCol": 2
+    },
+    {
+      "id": "ph_produce",
+      "label": "制作",
+      "fromCol": 3,
+      "toCol": 3
+    },
+    {
+      "id": "ph_launch",
+      "label": "上线",
+      "fromCol": 4,
+      "toCol": 4
+    },
+    {
+      "id": "ph_review",
+      "label": "复盘与评级",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "emphasis"
+    }
+  ],
+  "groups": [
+    {
+      "id": "g_guard",
+      "label": "录入即校验 · 查重永不阻断",
+      "lane": "sys",
+      "fromCol": 0,
+      "toCol": 1,
+      "variant": "emphasis"
+    },
+    {
+      "id": "g_track",
+      "label": "翻译进度跟踪",
+      "lane": "sys",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "default"
+    },
+    {
+      "id": "g_hang",
+      "label": "挂起出口",
+      "lane": "gov",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "security"
+    }
+  ],
+  "mainPath": [
+    "entry",
+    "dedupe",
+    "actor",
+    "translate",
+    "produce",
+    "stateflow",
+    "launch",
+    "rating",
+    "topicreview"
+  ],
+  "nodes": [
+    {
+      "id": "entry",
+      "lane": "biz",
+      "col": 0,
+      "type": "frontend",
+      "label": "进入创建",
+      "sublabel": "上传原创 / 从选题库创建",
+      "width": 172,
+      "tag": "两入口并列"
+    },
+    {
+      "id": "actor",
+      "lane": "biz",
+      "col": 1,
+      "type": "frontend",
+      "label": "指派译员",
+      "sublabel": "填预计交付时间",
+      "width": 172
+    },
+    {
+      "id": "produce",
+      "lane": "biz",
+      "col": 3,
+      "type": "frontend",
+      "label": "制作推进",
+      "sublabel": "状态随节点流转",
+      "width": 172
+    },
+    {
+      "id": "launch",
+      "lane": "biz",
+      "col": 4,
+      "type": "frontend",
+      "label": "上线",
+      "sublabel": "回填上线 ID / 剧名 / 开机时间",
+      "width": 172,
+      "tag": "填充率指标"
+    },
+    {
+      "id": "rating",
+      "lane": "biz",
+      "col": 5,
+      "type": "frontend",
+      "label": "评级 + 复盘录入",
+      "sublabel": "禁全角变体 · 量纲统一",
+      "width": 172
+    },
+    {
+      "id": "dedupe",
+      "lane": "sys",
+      "col": 1,
+      "type": "backend",
+      "label": "指纹 + 查重 + 校验",
+      "sublabel": "5 秒内返回候选 · R32 校验",
+      "width": 172,
+      "tag": "不阻断创建"
+    },
+    {
+      "id": "translate",
+      "lane": "sys",
+      "col": 2,
+      "type": "backend",
+      "label": "翻译中",
+      "sublabel": "生成待办并推送",
+      "width": 172
+    },
+    {
+      "id": "stateflow",
+      "lane": "sys",
+      "col": 3,
+      "type": "backend",
+      "label": "状态流转",
+      "sublabel": "枚举下拉 · 拒绝自由输入",
+      "width": 172,
+      "tag": "P3"
+    },
+    {
+      "id": "dashboard",
+      "lane": "sys",
+      "col": 5,
+      "type": "backend",
+      "label": "看板聚合",
+      "sublabel": "按形态 / 题材 / 评级",
+      "width": 172,
+      "tag": "周会 ≤10 分钟"
+    },
+    {
+      "id": "scriptid",
+      "lane": "data",
+      "col": 1,
+      "type": "database",
+      "label": "生成 script_id",
+      "sublabel": "唯一 · 不可变更",
+      "width": 172,
+      "tag": "覆盖 100%"
+    },
+    {
+      "id": "topicid",
+      "lane": "data",
+      "col": 2,
+      "type": "database",
+      "label": "绑定 topic_id",
+      "sublabel": "或保留 ref_text 原文",
+      "width": 172,
+      "tag": "二选一必填"
+    },
+    {
+      "id": "auditlog",
+      "lane": "data",
+      "col": 3,
+      "type": "database",
+      "label": "审计日志",
+      "sublabel": "操作人 + 时间 + 前后值",
+      "width": 172,
+      "tag": "≥180 天"
+    },
+    {
+      "id": "launchdata",
+      "lane": "data",
+      "col": 4,
+      "type": "database",
+      "label": "上线数据落库",
+      "sublabel": "成本字段受控",
+      "width": 172
+    },
+    {
+      "id": "topicreview",
+      "lane": "data",
+      "col": 5,
+      "type": "database",
+      "label": "选题级复盘",
+      "sublabel": "按 topic_id 聚合跨形态",
+      "width": 172,
+      "tag": "未绑不计入"
+    },
+    {
+      "id": "hangup",
+      "lane": "gov",
+      "col": 4,
+      "type": "security",
+      "label": "挂起",
+      "sublabel": "强制填 5 类结构化原因",
+      "width": 172,
+      "tag": "R18"
+    },
+    {
+      "id": "reftext",
+      "lane": "gov",
+      "col": 5,
+      "type": "security",
+      "label": "444 条外部母本",
+      "sublabel": "保留原文 · 待人工补录",
+      "width": 172,
+      "tag": "P7 不错绑"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_entry_dedupe",
+      "from": "entry",
+      "to": "dedupe",
+      "label": "上传",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_dedupe_id",
+      "from": "dedupe",
+      "to": "scriptid",
+      "label": "校验通过 → 建 ID",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_dedupe_actor",
+      "from": "dedupe",
+      "to": "actor",
+      "label": "进入翻译",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_actor_tr",
+      "from": "actor",
+      "to": "translate",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_tr_topic",
+      "from": "translate",
+      "to": "topicid",
+      "label": "绑定母本",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e_tr_produce",
+      "from": "translate",
+      "to": "produce",
+      "label": "译稿交付",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_produce_sf",
+      "from": "produce",
+      "to": "stateflow",
+      "label": "状态变更",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_sf_audit",
+      "from": "stateflow",
+      "to": "auditlog",
+      "label": "留痕",
+      "variant": "default",
+      "role": "main"
+    },
+    {
+      "id": "e_sf_launch",
+      "from": "stateflow",
+      "to": "launch",
+      "label": "推进上线",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_launch_data",
+      "from": "launch",
+      "to": "launchdata",
+      "label": "回填数据",
+      "variant": "default",
+      "role": "main"
+    },
+    {
+      "id": "e_launch_rating",
+      "from": "launch",
+      "to": "rating",
+      "label": "录入评级",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_rating_topicreview",
+      "from": "rating",
+      "to": "topicreview",
+      "label": "选题级聚合",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "e_topicreview_dash",
+      "from": "topicreview",
+      "to": "dashboard",
+      "label": "看板取数",
+      "variant": "default",
+      "role": "return"
+    },
+    {
+      "id": "e_sf_hang",
+      "from": "rating",
+      "to": "hangup",
+      "label": "评级不达标 / 产能冲突",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e_hang_ref",
+      "from": "hangup",
+      "to": "reftext",
+      "label": "无候选母本",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "六阶段主路径",
+      "items": [
+        "剧本上传 → 翻译 → 制作 → 上线 → 复盘 → 评级，同一条记录贯穿全程",
+        "提报 / 采买 / 策划 / 创作四个环节本轮不涉及，相关表格仅做归档与数据保全",
+        "主路径每个节点都要求写入结构化字段，不留自由文本"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "查重永不阻断",
+      "items": [
+        "上传即计算文件指纹 + 归一化剧名，5 秒内返回候选清单并展示相似度",
+        "命中时「一键绑定」与「继续上传（不是重复）」两个按钮并列，绑定不得是唯一路径",
+        "用户选「不是重复」必须落一条标记，供后续人工复核以防滥用"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "翻译只做进度跟踪",
+      "items": [
+        "状态进入「翻译中」后指派译员并填预计交付时间，我的待办自动生成并推送",
+        "译稿交付更新实际交付时间并流转至「翻译完成」，可按译员与交付时间筛选",
+        "翻译排期、一稿二稿、译员分配明确不做"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "挂起必须留下结构化原因",
+      "items": [
+        "挂起时强制从 5 类枚举中选择：素材不足 / 评级不达标 / 产能冲突 / 政策风险 / 其他",
+        "选「其他」必须补填说明文字，否则拒绝保存",
+        "恢复时回到挂起前原状态，原挂起原因保留备查"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "复盘的分母要说清楚",
+      "items": [
+        "选题级复盘只聚合已绑 topic_id 的项目，仅保留 ref_text 的项目不进入对比",
+        "页面必须提示未绑定数量，避免用户误判数据完整",
+        "对比维度至少包含剧本评级、上线评级、上线数据三项"
+      ]
+    }
+  ]
+}

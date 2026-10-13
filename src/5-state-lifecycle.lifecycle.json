@@ -1,0 +1,109 @@
+{
+  "schema_version": 2,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "剧本中台 · 项目状态机与迁移四道闸门",
+    "subtitle": "≤11 种受控枚举 · 状态变更强制留痕 · 挂起必须填结构化原因",
+    "locale": "zh-CN",
+    "output": "5-状态机与迁移闸门.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "start": { "label": "起点" },
+        "active": { "label": "进行中" },
+        "waiting": { "label": "等待 / 挂起" },
+        "decision": { "label": "闸门裁决" },
+        "success": { "label": "成功终态" },
+        "failure": { "label": "失败终态" }
+      }
+    }
+  },
+  "lanes": [
+    { "id": "main", "label": "项目主状态（≤11 种枚举）" },
+    { "id": "hold", "label": "挂起与待补录" },
+    { "id": "gate", "label": "迁移四道闸门" },
+    { "id": "term", "label": "闸门失败出口" }
+  ],
+  "states": [
+    { "id": "draft", "type": "start", "label": "草稿", "sublabel": "录入即校验", "lane": "main", "col": 0, "step": "01", "tag": "P4 关口前移" },
+    { "id": "translating", "type": "active", "label": "翻译中", "sublabel": "译员 + 预计交付", "lane": "main", "col": 1, "step": "02", "tag": "R33" },
+    { "id": "producing", "type": "active", "label": "制作中", "sublabel": "承制推进", "lane": "main", "col": 2, "step": "03" },
+    { "id": "online", "type": "success", "label": "已上线", "sublabel": "回填上线 ID / 时间", "lane": "main", "col": 3, "step": "04", "tag": "填充率 ≥85%" },
+    { "id": "reviewed", "type": "success", "label": "已复盘", "sublabel": "评级 + 复盘文本", "lane": "main", "col": 4, "step": "05", "tag": "北极星 ≥90%" },
+
+    { "id": "hold", "type": "waiting", "label": "挂起", "sublabel": "强制填 5 类结构化原因", "lane": "hold", "col": 2, "tag": "R18 必填" },
+    { "id": "orphanpool", "type": "waiting", "label": "待补录母本", "sublabel": "仅保留 ref_text", "lane": "hold", "col": 3, "tag": "不进选题级复盘" },
+
+    { "id": "shadow", "type": "decision", "label": "① 影子期", "sublabel": "双轨对账", "lane": "gate", "col": 0, "tag": "不影响现网" },
+    { "id": "verify", "type": "decision", "label": "② 核验", "sublabel": "抽样 ≥10%", "lane": "gate", "col": 1, "tag": "准确率 ≥98%" },
+    { "id": "gray", "type": "decision", "label": "③ 灰度", "sublabel": "小范围切换", "lane": "gate", "col": 2, "tag": "无 P0 缺陷" },
+    { "id": "full", "type": "decision", "label": "④ 全量", "sublabel": "中台成事实源", "lane": "gate", "col": 3, "tag": "业务书面确认" },
+
+    { "id": "rollback", "type": "failure", "label": "按批次回滚", "sublabel": "低于阈值重跑", "lane": "term", "col": 1, "tag": "E-29 迁移可逆" }
+  ],
+  "transitions": [
+    { "id": "t1", "from": "draft", "to": "translating", "label": "生成 script_id" },
+    { "id": "t2", "from": "translating", "to": "producing", "label": "译稿交付" },
+    { "id": "t3", "from": "producing", "to": "online", "label": "制作完成上线" },
+    { "id": "t4", "from": "online", "to": "reviewed", "label": "评级 + 复盘录入" },
+
+    { "id": "t6", "from": "producing", "to": "hold", "label": "素材 评级 产能 政策异常", "variant": "security" },
+    { "id": "t7", "from": "hold", "to": "producing", "label": "恢复至挂起前原状态", "variant": "dashed" },
+    { "id": "t8", "from": "reviewed", "to": "orphanpool", "label": "未绑 topic_id", "variant": "dashed" },
+
+    { "id": "t9", "from": "shadow", "to": "verify", "label": "差异可对账" },
+    { "id": "t10", "from": "verify", "to": "gray", "label": "抽样比对通过" },
+    { "id": "t11", "from": "gray", "to": "full", "label": "核心流程走通" },
+    { "id": "t12", "from": "verify", "to": "rollback", "label": "低于阈值", "variant": "security" },
+    { "id": "t13", "from": "rollback", "to": "shadow", "label": "重跑", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "状态是枚举，不是自由文本",
+      "items": [
+        "≤11 种受控枚举，只能下拉选取，拒绝任何自由输入",
+        "旧台账项目进度有 32 种自由文本，「一卡」有 9 种变体",
+        "每次变更必须记录操作人 + 时间 + 变更前后值（留痕率 0% → 100%）"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "挂起必须填结构化原因",
+      "items": [
+        "5 类枚举：素材不足 / 评级不达标 / 产能冲突 / 政策风险 / 其他",
+        "选「其他」必须补填说明文字，否则拒绝保存（E-10 必测阻断）",
+        "恢复时回到挂起前原状态，原挂起原因保留备查（E-11）"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "校验失败是交互反馈，不是状态",
+      "items": [
+        "标「内部原创」却填了母本 → 拒绝保存并提示改为「结构对标改编」（E-05）",
+        "改编方式非原创但母本字段全空 → 拒绝保存并提示二选一必填（E-06）",
+        "这些拦截发生在写入之前，不产生状态迁移，因此不在状态机中占位"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "迁移四道闸门（方案乙）",
+      "items": [
+        "影子期 → 核验 → 灰度 → 全量，每道有明确放行标准，可回滚可止损",
+        "核验线：抽样 ≥10%、字段级准确率 ≥98%、挂起率 ≤5%，任一不达线不放行",
+        "对比方案甲「一次性大迁移」：误合并不可逆、出问题无退路，不推荐"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "本期不做的两件事",
+      "items": [
+        "流转路径合法性拦截（R4 已降为 Could）——非法流转不拦截，由业务自律 + 事后审计发现",
+        "终态保护——已复盘项目需要修正时照常执行并留痕（E-15）"
+      ]
+    }
+  ]
+}
